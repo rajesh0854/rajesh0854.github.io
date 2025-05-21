@@ -17,6 +17,14 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/style.css">
+    <!-- AI Typing Effect CSS -->
+    <link rel="stylesheet" href="css/ai-typing-effect.css">
+    <!-- Hide default cursor when reptile cursor is active -->
+    <style>
+        body {
+            cursor: none;
+        }
+    </style>
 </head>
 <body>
     <!-- AI Cursor Effects Container -->
@@ -52,9 +60,24 @@
                 <div class="col-lg-6 hero-text">
                     <h1 class="display-4 fw-bold mb-4">Innovative Technology Solutions</h1>
                     <h2 class="h3 mb-4">Empowering businesses with cutting-edge digital transformation</h2>
-                    <p class="lead mb-5">Deep Mining delivers expert solutions in web development, mobile applications, AI, and more.</p>
-                    <a href="#services" class="btn btn-primary btn-lg me-3">Explore Services</a>
-                    <a href="#contact" class="btn btn-outline-primary btn-lg">Contact Us</a>
+                    <p class="lead mb-4">Deep Mining delivers expert solutions in web development, mobile applications, AI, and more.</p>
+                    
+                    <!-- AI Status Typing Effect -->
+                    <div id="ai-status" class="hero-ai-status">
+                        <!-- AI status typing effect will be inserted here by JavaScript -->
+                        <div class="ai-status-data-stream">
+                            <!-- Data stream lines will be dynamically generated -->
+                            <div class="data-line" style="top: 10%; animation-delay: 0s;"></div>
+                            <div class="data-line" style="top: 30%; animation-delay: 0.5s;"></div>
+                            <div class="data-line" style="top: 50%; animation-delay: 1s;"></div>
+                            <div class="data-line" style="top: 70%; animation-delay: 1.5s;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-5">
+                        <a href="#services" class="btn btn-primary btn-lg me-3">Explore Services</a>
+                        <a href="#contact" class="btn btn-outline-primary btn-lg">Contact Us</a>
+                    </div>
                 </div>
                 <div class="col-lg-6 hero-image">
                     <div class="hero-animation">
@@ -413,7 +436,11 @@
     <script src="js/config.js"></script>
     <!-- Custom JS -->
     <script src="js/main.js"></script>
+    <!-- AI Typing Effect JS -->
+    <script src="js/ai-typing-effect.js"></script>
     <!-- Contact Form Handler -->
     <script src="js/contact.js"></script>
+    <!-- Reptile Cursor Effect -->
+    <script src="js/reptile-cursor.js"></script>
 </body>
 </html> 

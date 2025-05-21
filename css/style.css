@@ -875,51 +875,65 @@ body.dark-theme #header.sticky {
 }
 
 /* Enhanced Cursor Effects */
-.cursor {
-  position: fixed;
-  width: 30px;
-  height: 30px;
-  border: 2px solid var(--primary-color);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  transition: width 0.3s, height 0.3s, background-color 0.3s, transform 0.1s;
-  z-index: 9999;
-  mix-blend-mode: difference;
+.cursor, .cursor-dot, .cursor-trail {
+  display: none; /* Hide default cursor effects since we're using reptile cursor */
 }
 
-.cursor-dot {
+/* Reptile Cursor Styles */
+.reptile-head {
   position: fixed;
-  width: 8px;
-  height: 8px;
-  background-color: var(--primary-color);
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   transform: translate(-50%, -50%);
   pointer-events: none;
   z-index: 9999;
-  transition: transform 0.1s;
+  transition: transform 0.2s;
 }
 
-.cursor-trail {
+.reptile-segment {
   position: fixed;
-  width: 6px;
-  height: 6px;
-  background-color: rgba(37, 99, 235, 0.6);
   border-radius: 50%;
+  transform: translate(-50%, -50%);
   pointer-events: none;
   z-index: 9998;
-  animation: fadeOut 0.5s forwards;
+  transition: transform 0.2s;
 }
 
-@keyframes fadeOut {
-  0% {
-    opacity: 0.7;
-    transform: scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(0);
-  }
+.reptile-eye {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background-color: #ffffff;
+  border-radius: 50%;
+}
+
+.reptile-tongue {
+  position: absolute;
+  width: 10px;
+  height: 6px;
+  background-color: #ef4444;
+  clip-path: polygon(0% 0%, 40% 0%, 50% 100%, 60% 0%, 100% 0%, 80% 100%, 20% 100%);
+}
+
+/* When hovering interactive elements, make reptile react */
+body.hovering-interactive .reptile-head {
+  transform: translate(-50%, -50%) scale(1.3);
+}
+
+body.hovering-interactive .reptile-segment {
+  opacity: 0.8;
+}
+
+/* Animation keyframes for reptile effects */
+@keyframes reptileTongue {
+  0%, 100% { transform: translateX(-50%) scaleY(0); }
+  50% { transform: translateX(-50%) scaleY(1); }
+}
+
+@keyframes reptilePulse {
+  0% { transform: translate(-50%, -50%) scale(0.9); }
+  100% { transform: translate(-50%, -50%) scale(1.1); }
 }
 
 /* Animation Effects */

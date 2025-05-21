@@ -18,6 +18,9 @@ document.addEventListener('DOMContentLoaded', function() {
     initDarkMode();
     initTechLogos();
     initHeroAnimation();
+    
+    // Initialize AI status animation if not handled by ai-typing-effect.js
+    initAIStatusAnimation();
 });
 
 /**
@@ -41,12 +44,43 @@ function applyConfigSettings() {
         document.documentElement.style.setProperty('--primary-color', config.colors.primary);
         document.documentElement.style.setProperty('--secondary-color', config.colors.secondary);
         document.documentElement.style.setProperty('--accent-color', config.colors.accent);
+        
+        // Update RGB variables from hex colors
+        const primaryRgb = hexToRgb(config.colors.primary);
+        const secondaryRgb = hexToRgb(config.colors.secondary);
+        const accentRgb = hexToRgb(config.colors.accent);
+        
+        if (primaryRgb) {
+            document.documentElement.style.setProperty('--primary-color-rgb', `${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}`);
+        }
+        if (secondaryRgb) {
+            document.documentElement.style.setProperty('--secondary-color-rgb', `${secondaryRgb.r}, ${secondaryRgb.g}, ${secondaryRgb.b}`);
+        }
+        if (accentRgb) {
+            document.documentElement.style.setProperty('--accent-color-rgb', `${accentRgb.r}, ${accentRgb.g}, ${accentRgb.b}`);
+        }
     }
     
     // Disable animations if specified in config
     if (config.animations && !config.animations.enabled) {
         document.body.classList.add('no-animations');
     }
+}
+
+/**
+ * Helper function to convert hex to RGB
+ */
+function hexToRgb(hex) {
+    // Remove the # if present
+    hex = hex.replace(/^#/, '');
+    
+    // Parse the hex values
+    const bigint = parseInt(hex, 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+    
+    return { r, g, b };
 }
 
 /**
@@ -312,7 +346,7 @@ function initScrollAnimations() {
 }
 
 /**
- * AI-powered cursor effects
+ * AI-powered cursor effects and reptile cursor
  */
 function initCursorEffects() {
     const cursorEffects = document.getElementById('cursor-effects');
@@ -320,109 +354,27 @@ function initCursorEffects() {
     
     console.log('Initializing cursor effects');
     
-    // Create cursor elements
-    const cursor = document.createElement('div');
-    cursor.classList.add('cursor');
-    
-    const cursorDot = document.createElement('div');
-    cursorDot.classList.add('cursor-dot');
-    
-    cursorEffects.appendChild(cursor);
-    cursorEffects.appendChild(cursorDot);
-    
-    // Cursor position variables
-    let cursorX = 0;
-    let cursorY = 0;
-    let dotX = 0;
-    let dotY = 0;
-    
-    // Track cursor position
-    document.addEventListener('mousemove', (e) => {
-        cursorX = e.clientX;
-        cursorY = e.clientY;
-        
-        // Create particle trail effect (reduced frequency for better performance)
-        if (Math.random() > 0.95) {
-            createTrailParticle(e.clientX, e.clientY);
-        }
-    });
-    
-    // Animate cursors with smooth movement
-    function animateCursors() {
-        // Smooth follow for dot
-        const dotSpeed = 0.3;
-        dotX += (cursorX - dotX) * dotSpeed;
-        dotY += (cursorY - dotY) * dotSpeed;
-        
-        cursorDot.style.left = `${dotX}px`;
-        cursorDot.style.top = `${dotY}px`;
-        
-        // Main cursor follows exact position
-        cursor.style.left = `${cursorX}px`;
-        cursor.style.top = `${cursorY}px`;
-        
-        requestAnimationFrame(animateCursors);
-    }
-    
-    // Create a trail particle
-    function createTrailParticle(x, y) {
-        const trail = document.createElement('div');
-        trail.classList.add('cursor-trail');
-        trail.style.left = `${x}px`;
-        trail.style.top = `${y}px`;
-        
-        // Random size for variety
-        const size = Math.random() * 5 + 3;
-        trail.style.width = `${size}px`;
-        trail.style.height = `${size}px`;
-        
-        // Random color from our palette
-        const colors = [
-            'rgba(37, 99, 235, 0.6)',   // Primary blue
-            'rgba(139, 92, 246, 0.6)',  // Secondary purple
-            'rgba(16, 185, 129, 0.6)'   // Accent green
-        ];
-        trail.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-        
-        cursorEffects.appendChild(trail);
-        
-        // Remove particle after animation completes
-        setTimeout(() => {
-            if (trail && trail.parentNode) {
-                cursorEffects.removeChild(trail);
-            }
-        }, 500);
-    }
+    // We now use the reptile-cursor.js for the main cursor effect
+    // This container will be used by that script
     
     // Add hover effects for interactive elements
     const interactiveElements = document.querySelectorAll(
         'a, button, .nav-link, .service-card, .tech-logo, .usp-card, input, textarea, .btn'
     );
     
+    // We'll still set up event listeners for interactive elements
+    // The reptile cursor will be affected by the CSS classes we add
     interactiveElements.forEach(el => {
         el.addEventListener('mouseenter', () => {
-            cursor.style.width = '50px';
-            cursor.style.height = '50px';
-            cursor.style.backgroundColor = 'rgba(37, 99, 235, 0.1)';
-            cursor.style.mixBlendMode = 'normal';
-            
-            // Add scale effect to dot
-            cursorDot.style.transform = 'translate(-50%, -50%) scale(1.5)';
+            // Add a class that our reptile cursor can detect
+            document.body.classList.add('hovering-interactive');
         });
         
         el.addEventListener('mouseleave', () => {
-            cursor.style.width = '30px';
-            cursor.style.height = '30px';
-            cursor.style.backgroundColor = 'transparent';
-            cursor.style.mixBlendMode = 'difference';
-            
-            // Reset dot scale
-            cursorDot.style.transform = 'translate(-50%, -50%) scale(1)';
+            // Remove the class when not hovering
+            document.body.classList.remove('hovering-interactive');
         });
     });
-    
-    // Start the animation loop
-    animateCursors();
 }
 
 /**
@@ -628,32 +580,44 @@ function initHeroAnimation() {
     // Clear any existing content
     heroAnimation.innerHTML = '';
     
-    // Create more visually appealing 3D floating elements
+    // Create more visually appealing 3D floating elements with circular rotation
+    // Added more AI-related icons for a complete circle
     const elements = [
-        { icon: 'fa-code', color: '#2563eb', size: 60, delay: 0, duration: 6 },
-        { icon: 'fa-mobile-alt', color: '#8b5cf6', size: 50, delay: 0.7, duration: 8 },
-        { icon: 'fa-database', color: '#10b981', size: 45, delay: 1.4, duration: 7 },
-        { icon: 'fa-robot', color: '#f59e0b', size: 55, delay: 2.1, duration: 9 },
-        { icon: 'fa-brain', color: '#ef4444', size: 48, delay: 2.8, duration: 7.5 },
-        { icon: 'fa-microchip', color: '#3b82f6', size: 42, delay: 3.5, duration: 6.5 },
-        { icon: 'fa-cogs', color: '#6366f1', size: 52, delay: 4.2, duration: 8.5 }
+        { icon: 'fa-code', color: '#2563eb', size: 56, duration: 20, orbitRadius: 150, orbitOffset: 0 },
+        { icon: 'fa-mobile-alt', color: '#8b5cf6', size: 50, duration: 20, orbitRadius: 150, orbitOffset: Math.PI * 0.125 },
+        { icon: 'fa-database', color: '#10b981', size: 46, duration: 20, orbitRadius: 150, orbitOffset: Math.PI * 0.25 },
+        { icon: 'fa-robot', color: '#f59e0b', size: 52, duration: 20, orbitRadius: 150, orbitOffset: Math.PI * 0.375 },
+        { icon: 'fa-brain', color: '#ef4444', size: 48, duration: 20, orbitRadius: 150, orbitOffset: Math.PI * 0.5 },
+        { icon: 'fa-microchip', color: '#3b82f6', size: 44, duration: 20, orbitRadius: 150, orbitOffset: Math.PI * 0.625 },
+        { icon: 'fa-network-wired', color: '#14b8a6', size: 48, duration: 20, orbitRadius: 150, orbitOffset: Math.PI * 0.75 },
+        { icon: 'fa-chart-network', color: '#8b5cf6', size: 50, duration: 20, orbitRadius: 150, orbitOffset: Math.PI * 0.875 },
+        { icon: 'fa-server', color: '#f97316', size: 46, duration: 20, orbitRadius: 150, orbitOffset: Math.PI },
+        { icon: 'fa-cloud', color: '#06b6d4', size: 52, duration: 20, orbitRadius: 150, orbitOffset: Math.PI * 1.125 },
+        { icon: 'fa-cogs', color: '#6366f1', size: 54, duration: 20, orbitRadius: 150, orbitOffset: Math.PI * 1.25 },
+        { icon: 'fa-laptop-code', color: '#8b5cf6', size: 50, duration: 20, orbitRadius: 150, orbitOffset: Math.PI * 1.375 },
+        { icon: 'fa-project-diagram', color: '#10b981', size: 48, duration: 20, orbitRadius: 150, orbitOffset: Math.PI * 1.5 },
+        { icon: 'fa-sitemap', color: '#ec4899', size: 46, duration: 20, orbitRadius: 150, orbitOffset: Math.PI * 1.625 },
+        { icon: 'fa-code-branch', color: '#f59e0b', size: 44, duration: 20, orbitRadius: 150, orbitOffset: Math.PI * 1.75 },
+        { icon: 'fa-atom', color: '#2563eb', size: 52, duration: 20, orbitRadius: 150, orbitOffset: Math.PI * 1.875 }
     ];
+    
+    // Create orbit container
+    const orbitContainer = document.createElement('div');
+    orbitContainer.style.position = 'absolute';
+    orbitContainer.style.top = '50%';
+    orbitContainer.style.left = '50%';
+    orbitContainer.style.transform = 'translate(-50%, -50%)';
+    orbitContainer.style.width = '100%';
+    orbitContainer.style.height = '100%';
+    heroAnimation.appendChild(orbitContainer);
+    
+    // Animation timestamp for orbital calculations
+    let startTime = Date.now();
     
     elements.forEach((element, index) => {
         const floatingEl = document.createElement('div');
         
-        // Position randomly but ensure they're distributed around the container
-        const angle = (index / elements.length) * Math.PI * 2;
-        const radius = Math.min(heroAnimation.offsetWidth, heroAnimation.offsetHeight) * 0.35;
-        const centerX = heroAnimation.offsetWidth / 2;
-        const centerY = heroAnimation.offsetHeight / 2;
-        
-        const posX = centerX + radius * Math.cos(angle);
-        const posY = centerY + radius * Math.sin(angle);
-        
-        // Add some randomness to the exact positions
-        const randomOffset = Math.random() * 50 - 25;
-        
+        // Apply base styles for the orbital elements
         floatingEl.style.position = 'absolute';
         floatingEl.style.width = `${element.size}px`;
         floatingEl.style.height = `${element.size}px`;
@@ -663,28 +627,17 @@ function initHeroAnimation() {
         floatingEl.style.display = 'flex';
         floatingEl.style.alignItems = 'center';
         floatingEl.style.justifyContent = 'center';
-        floatingEl.style.boxShadow = '0 10px 30px rgba(0,0,0,0.15)';
-        floatingEl.style.left = `${posX + randomOffset}px`;
-        floatingEl.style.top = `${posY + randomOffset}px`;
+        floatingEl.style.boxShadow = `0 10px 30px rgba(0,0,0,0.15), 0 0 15px ${element.color}40`;
+        floatingEl.style.transition = 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease';
         
-        // Create more sophisticated animation with keyframes
+        // Add icon
+        floatingEl.innerHTML = `<i class="fas ${element.icon}" style="font-size: ${element.size / 2.2}px; filter: drop-shadow(0 0 5px rgba(255,255,255,0.8));"></i>`;
+        
+        // Subtle pulse effect with CSS animation
         const keyframes = `
-            @keyframes float-${index} {
-                0% {
-                    transform: translate(0, 0) rotate(0deg);
-                }
-                25% {
-                    transform: translate(${Math.random() * 30 - 15}px, ${Math.random() * 30 - 15}px) rotate(${Math.random() * 10}deg);
-                }
-                50% {
-                    transform: translate(${Math.random() * 30 - 15}px, ${Math.random() * 30 - 15}px) rotate(${Math.random() * 10}deg);
-                }
-                75% {
-                    transform: translate(${Math.random() * 30 - 15}px, ${Math.random() * 30 - 15}px) rotate(${Math.random() * 10}deg);
-                }
-                100% {
-                    transform: translate(0, 0) rotate(0deg);
-                }
+            @keyframes pulse-orbit-${index} {
+                0%, 100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+                50% { transform: translate(-50%, -50%) scale(1.1) rotate(180deg); }
             }
         `;
         
@@ -693,26 +646,177 @@ function initHeroAnimation() {
         styleSheet.textContent = keyframes;
         document.head.appendChild(styleSheet);
         
-        floatingEl.style.animation = `float-${index} ${element.duration}s ease-in-out ${element.delay}s infinite`;
+        // Apply the pulse animation
+        floatingEl.style.animation = `pulse-orbit-${index} 5s ease-in-out infinite`;
         
-        floatingEl.innerHTML = `<i class="fas ${element.icon}" style="font-size: ${element.size / 2.2}px"></i>`;
-        
-        // Add subtle pulse effect on hover
+        // Add hover effect
         floatingEl.addEventListener('mouseenter', () => {
-            floatingEl.style.transform = 'scale(1.1)';
-            floatingEl.style.boxShadow = '0 15px 35px rgba(0,0,0,0.2)';
+            floatingEl.style.transform = 'translate(-50%, -50%) scale(1.2)';
+            floatingEl.style.boxShadow = `0 15px 40px rgba(0,0,0,0.25), 0 0 20px ${element.color}80`;
             floatingEl.style.zIndex = '10';
-            floatingEl.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease';
         });
         
         floatingEl.addEventListener('mouseleave', () => {
-            floatingEl.style.transform = 'scale(1)';
-            floatingEl.style.boxShadow = '0 10px 30px rgba(0,0,0,0.15)';
+            floatingEl.style.transform = 'translate(-50%, -50%) scale(1)';
+            floatingEl.style.boxShadow = `0 10px 30px rgba(0,0,0,0.15), 0 0 15px ${element.color}40`;
             floatingEl.style.zIndex = '1';
         });
         
-        heroAnimation.appendChild(floatingEl);
+        orbitContainer.appendChild(floatingEl);
+        
+        // Add element to animation frame update
+        element.domElement = floatingEl;
     });
+    
+    // Create AI control system at the center
+    const aiControlCenter = document.createElement('div');
+    aiControlCenter.style.position = 'absolute';
+    aiControlCenter.style.width = '80px';
+    aiControlCenter.style.height = '80px';
+    aiControlCenter.style.borderRadius = '50%';
+    aiControlCenter.style.background = 'radial-gradient(circle, rgba(37,99,235,1) 0%, rgba(139,92,246,1) 100%)';
+    aiControlCenter.style.boxShadow = '0 0 30px rgba(37,99,235,0.7), 0 0 50px rgba(139,92,246,0.5)';
+    aiControlCenter.style.top = '50%';
+    aiControlCenter.style.left = '50%';
+    aiControlCenter.style.transform = 'translate(-50%, -50%)';
+    aiControlCenter.style.display = 'flex';
+    aiControlCenter.style.alignItems = 'center';
+    aiControlCenter.style.justifyContent = 'center';
+    aiControlCenter.style.zIndex = '5';
+    
+    // Add brain icon to center
+    const centerIcon = document.createElement('i');
+    centerIcon.className = 'fas fa-brain';
+    centerIcon.style.fontSize = '32px';
+    centerIcon.style.color = 'white';
+    centerIcon.style.filter = 'drop-shadow(0 0 8px rgba(255,255,255,0.8))';
+    centerIcon.style.animation = 'pulseCenter 2s ease-in-out infinite';
+    aiControlCenter.appendChild(centerIcon);
+    
+    // Add rotating circles around the AI control center
+    for (let i = 0; i < 3; i++) {
+        const rotatingRing = document.createElement('div');
+        rotatingRing.style.position = 'absolute';
+        rotatingRing.style.top = '50%';
+        rotatingRing.style.left = '50%';
+        rotatingRing.style.width = `${100 + i * 20}px`;
+        rotatingRing.style.height = `${100 + i * 20}px`;
+        rotatingRing.style.borderRadius = '50%';
+        rotatingRing.style.border = `1px solid rgba(255, 255, 255, ${0.3 - i * 0.08})`;
+        rotatingRing.style.transform = 'translate(-50%, -50%) rotate(0deg)';
+        rotatingRing.style.animation = `rotate-ring-${i} ${8 + i * 2}s linear infinite`;
+        rotatingRing.style.pointerEvents = 'none';
+        
+        // Add keyframes for this ring
+        const ringKeyframes = document.createElement('style');
+        ringKeyframes.textContent = `
+            @keyframes rotate-ring-${i} {
+                0% { transform: translate(-50%, -50%) rotate(0deg); }
+                100% { transform: translate(-50%, -50%) rotate(${i % 2 === 0 ? '' : '-'}360deg); }
+            }
+        `;
+        document.head.appendChild(ringKeyframes);
+        
+        aiControlCenter.appendChild(rotatingRing);
+    }
+    
+    // Add scan effect
+    const scanEffect = document.createElement('div');
+    scanEffect.style.position = 'absolute';
+    scanEffect.style.top = '50%';
+    scanEffect.style.left = '50%';
+    scanEffect.style.width = '130%';
+    scanEffect.style.height = '130%';
+    scanEffect.style.borderRadius = '50%';
+    scanEffect.style.background = 'radial-gradient(circle, rgba(37,99,235,0.1) 0%, rgba(37,99,235,0) 70%)';
+    scanEffect.style.transform = 'translate(-50%, -50%) scale(0.8)';
+    scanEffect.style.animation = 'scanEffect 3s ease-in-out infinite';
+    scanEffect.style.pointerEvents = 'none';
+    scanEffect.style.zIndex = '2';
+    
+    // Add keyframes for scan effect
+    const scanKeyframes = document.createElement('style');
+    scanKeyframes.textContent = `
+        @keyframes scanEffect {
+            0%, 100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; }
+            50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.2; }
+        }
+        
+        @keyframes pulseCenter {
+            0%, 100% { transform: scale(1); opacity: 0.95; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+    `;
+    document.head.appendChild(scanKeyframes);
+    
+    aiControlCenter.appendChild(scanEffect);
+    orbitContainer.appendChild(aiControlCenter);
+    
+    // Create data flow animations from center to icons
+    elements.forEach((element, index) => {
+        const dataFlow = document.createElement('div');
+        dataFlow.style.position = 'absolute';
+        dataFlow.style.top = '50%';
+        dataFlow.style.left = '50%';
+        dataFlow.style.width = '2px';
+        dataFlow.style.height = `${element.orbitRadius}px`;
+        dataFlow.style.transformOrigin = 'bottom center';
+        dataFlow.style.transform = `translate(-50%, -100%) rotate(${index * (360 / elements.length)}deg)`;
+        dataFlow.style.zIndex = '1';
+        dataFlow.style.pointerEvents = 'none';
+        
+        // Create data point that travels along the path
+        const dataPoint = document.createElement('div');
+        dataPoint.style.position = 'absolute';
+        dataPoint.style.bottom = '0';
+        dataPoint.style.left = '50%';
+        dataPoint.style.width = '4px';
+        dataPoint.style.height = '4px';
+        dataPoint.style.borderRadius = '50%';
+        dataPoint.style.backgroundColor = element.color;
+        dataPoint.style.transform = 'translate(-50%, -50%)';
+        dataPoint.style.boxShadow = `0 0 5px ${element.color}`;
+        dataPoint.style.animation = `dataTravel-${index} ${3 + Math.random() * 2}s infinite`;
+        dataPoint.style.animationDelay = `${index * 0.3}s`;
+        
+        // Create keyframes for data point travel
+        const dataKeyframes = document.createElement('style');
+        dataKeyframes.textContent = `
+            @keyframes dataTravel-${index} {
+                0% { bottom: 0; opacity: 0; }
+                10% { opacity: 1; }
+                90% { opacity: 1; }
+                100% { bottom: 100%; opacity: 0; }
+            }
+        `;
+        document.head.appendChild(dataKeyframes);
+        
+        dataFlow.appendChild(dataPoint);
+        orbitContainer.appendChild(dataFlow);
+    });
+    
+    // Create orbital animation
+    function animateOrbits() {
+        const now = Date.now();
+        const elapsed = (now - startTime) / 1000; // Convert to seconds
+        
+        elements.forEach(element => {
+            // Calculate position on the orbit
+            const angle = (elapsed / element.duration) * Math.PI * 2 + element.orbitOffset;
+            const x = Math.cos(angle) * element.orbitRadius;
+            const y = Math.sin(angle) * element.orbitRadius;
+            
+            // Position the element
+            element.domElement.style.left = `calc(50% + ${x}px)`;
+            element.domElement.style.top = `calc(50% + ${y}px)`;
+        });
+        
+        // Continue animation loop
+        requestAnimationFrame(animateOrbits);
+    }
+    
+    // Start animation
+    animateOrbits();
     
     // Add connecting lines using canvas
     const canvas = document.createElement('canvas');
@@ -722,7 +826,7 @@ function initHeroAnimation() {
     canvas.style.width = '100%';
     canvas.style.height = '100%';
     canvas.style.zIndex = '0';
-    heroAnimation.appendChild(canvas);
+    orbitContainer.appendChild(canvas);
     
     // Resize canvas
     function resizeCanvas() {
@@ -734,113 +838,122 @@ function initHeroAnimation() {
     window.addEventListener('resize', resizeCanvas);
     
     // Animate connecting lines
-    const ctx = canvas.getContext('2d');
-    
-    function animate() {
+    function animateConnections() {
+        const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // Draw lines between elements
-        const floatingElements = heroAnimation.querySelectorAll('div');
+        // Calculate center point of the canvas
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
         
+        // Draw lines between elements
         ctx.strokeStyle = 'rgba(37, 99, 235, 0.15)';
         ctx.lineWidth = 1;
         
-        for (let i = 0; i < floatingElements.length; i++) {
-            const el1 = floatingElements[i];
-            const x1 = el1.offsetLeft + el1.offsetWidth / 2;
-            const y1 = el1.offsetTop + el1.offsetHeight / 2;
+        // Draw circular orbital path
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(37, 99, 235, 0.1)';
+        ctx.arc(centerX, centerY, elements[0].orbitRadius, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // Draw connecting lines between adjacent elements
+        for (let i = 0; i < elements.length; i++) {
+            const element = elements[i];
+            const el1Rect = element.domElement.getBoundingClientRect();
+            const x1 = el1Rect.left + el1Rect.width / 2 - orbitContainer.getBoundingClientRect().left;
+            const y1 = el1Rect.top + el1Rect.height / 2 - orbitContainer.getBoundingClientRect().top;
             
-            for (let j = i + 1; j < floatingElements.length; j++) {
-                const el2 = floatingElements[j];
-                const x2 = el2.offsetLeft + el2.offsetWidth / 2;
-                const y2 = el2.offsetTop + el2.offsetHeight / 2;
-                
-                // Calculate distance
-                const distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-                
-                // Only draw lines if elements are close enough with dynamic max distance
-                const maxDistance = Math.min(canvas.width, canvas.height) * 0.4;
-                
-                if (distance < maxDistance) {
-                    // Adjust opacity based on distance
-                    const opacity = 0.2 * (1 - distance / maxDistance);
-                    ctx.strokeStyle = `rgba(37, 99, 235, ${opacity})`;
-                    
-                    ctx.beginPath();
-                    ctx.moveTo(x1, y1);
-                    ctx.lineTo(x2, y2);
-                    ctx.stroke();
-                }
-            }
+            // Connect to next element (circular)
+            const nextIdx = (i + 1) % elements.length;
+            const nextElement = elements[nextIdx];
+            const el2Rect = nextElement.domElement.getBoundingClientRect();
+            const x2 = el2Rect.left + el2Rect.width / 2 - orbitContainer.getBoundingClientRect().left;
+            const y2 = el2Rect.top + el2Rect.height / 2 - orbitContainer.getBoundingClientRect().top;
+            
+            // Draw line with gradient
+            const gradient = ctx.createLinearGradient(x1, y1, x2, y2);
+            gradient.addColorStop(0, element.color + '40');
+            gradient.addColorStop(1, nextElement.color + '40');
+            
+            ctx.beginPath();
+            ctx.strokeStyle = gradient;
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+            
+            // Connect to center with fading line
+            const gradientToCenter = ctx.createLinearGradient(x1, y1, centerX, centerY);
+            gradientToCenter.addColorStop(0, element.color + '40');
+            gradientToCenter.addColorStop(1, 'rgba(255, 255, 255, 0.05)');
+            
+            ctx.beginPath();
+            ctx.strokeStyle = gradientToCenter;
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(centerX, centerY);
+            ctx.stroke();
         }
         
-        requestAnimationFrame(animate);
+        requestAnimationFrame(animateConnections);
     }
     
-    animate();
-    
-    // Add subtle background particles
-    const particlesCanvas = document.createElement('canvas');
-    particlesCanvas.style.position = 'absolute';
-    particlesCanvas.style.top = '0';
-    particlesCanvas.style.left = '0';
-    particlesCanvas.style.width = '100%';
-    particlesCanvas.style.height = '100%';
-    particlesCanvas.style.zIndex = '-1';
-    heroAnimation.appendChild(particlesCanvas);
-    
-    // Resize particles canvas
-    function resizeParticlesCanvas() {
-        particlesCanvas.width = heroAnimation.offsetWidth;
-        particlesCanvas.height = heroAnimation.offsetHeight;
-    }
-    
-    resizeParticlesCanvas();
-    window.addEventListener('resize', resizeParticlesCanvas);
-    
-    // Initialize background particles
-    const particlesCtx = particlesCanvas.getContext('2d');
-    const particles = [];
-    
-    // Create particles
-    for (let i = 0; i < 50; i++) {
-        particles.push({
-            x: Math.random() * particlesCanvas.width,
-            y: Math.random() * particlesCanvas.height,
-            radius: Math.random() * 3 + 1,
-            color: `rgba(${Math.floor(Math.random() * 100 + 150)}, ${Math.floor(Math.random() * 100 + 150)}, ${Math.floor(Math.random() * 100 + 150)}, 0.2)`,
-            speedX: Math.random() * 0.5 - 0.25,
-            speedY: Math.random() * 0.5 - 0.25
-        });
-    }
-    
-    // Animate particles
-    function animateParticles() {
-        particlesCtx.clearRect(0, 0, particlesCanvas.width, particlesCanvas.height);
+    animateConnections();
+}
+
+/**
+ * Initialize AI status animation integration
+ */
+function initAIStatusAnimation() {
+    // Check if the AI status typing effect is already instantiated
+    if (typeof window.aiTypingEffect === 'undefined') {
+        // Create data stream animations
+        createDataStreamLines();
         
-        particles.forEach(particle => {
-            // Move particles
-            particle.x += particle.speedX;
-            particle.y += particle.speedY;
-            
-            // Bounce off edges
-            if (particle.x < 0 || particle.x > particlesCanvas.width) {
-                particle.speedX *= -1;
+        // Add interaction effects
+        const aiStatusContainer = document.querySelector('.hero-ai-status');
+        if (aiStatusContainer) {
+            // Add hover effects with GSAP if available
+            if (typeof gsap !== 'undefined') {
+                aiStatusContainer.addEventListener('mouseenter', () => {
+                    gsap.to(aiStatusContainer, {
+                        scale: 1.02,
+                        duration: 0.3,
+                        ease: 'power2.out'
+                    });
+                });
+                
+                aiStatusContainer.addEventListener('mouseleave', () => {
+                    gsap.to(aiStatusContainer, {
+                        scale: 1,
+                        duration: 0.3,
+                        ease: 'power2.out'
+                    });
+                });
             }
-            
-            if (particle.y < 0 || particle.y > particlesCanvas.height) {
-                particle.speedY *= -1;
-            }
-            
-            // Draw particle
-            particlesCtx.beginPath();
-            particlesCtx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-            particlesCtx.fillStyle = particle.color;
-            particlesCtx.fill();
-        });
-        
-        requestAnimationFrame(animateParticles);
+        }
     }
+}
+
+/**
+ * Create dynamic data stream lines
+ */
+function createDataStreamLines() {
+    const dataStream = document.querySelector('.ai-status-data-stream');
+    if (!dataStream) return;
     
-    animateParticles();
+    // Clear existing lines
+    dataStream.innerHTML = '';
+    
+    // Create random data lines
+    const lineCount = 8;
+    for (let i = 0; i < lineCount; i++) {
+        const line = document.createElement('div');
+        line.classList.add('data-line');
+        
+        // Randomize position and animation delay
+        line.style.top = `${Math.random() * 100}%`;
+        line.style.animationDelay = `${Math.random() * 2}s`;
+        line.style.width = `${50 + Math.random() * 50}%`;
+        
+        dataStream.appendChild(line);
+    }
 } 
